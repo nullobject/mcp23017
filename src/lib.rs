@@ -130,6 +130,35 @@ where
         self.write_register(reg, reg_value_mod)
     }
 
+    /// Configures the direction, pull-up, and polarity for a port.
+    ///
+    /// * `port` - The port to configure.
+    /// * `dir` - The direction mask.
+    /// * `pull_up` - The pull-up mask.
+    /// * `polarity` - The polarity mask.
+    pub fn port_mode(&mut self, port: Port, dir: u8, pull_up: u8, polarity: u8) -> Result<(), E> {
+        let reg = if port == Port::GPIOA {
+            Register::IODIRA
+        } else {
+            Register::IODIRB
+        };
+        self.write_register(reg, dir)?;
+
+        let reg = if port == Port::GPIOA {
+            Register::GPPUA
+        } else {
+            Register::GPPUB
+        };
+        self.write_register(reg, pull_up)?;
+
+        let reg = if port == Port::GPIOA {
+            Register::IPOLA
+        } else {
+            Register::IPOLB
+        };
+        self.write_register(reg, polarity)
+    }
+
     /// Sets the mode for a single pin to either `Mode::INPUT` or `Mode::OUTPUT`.
     pub fn pin_mode(&mut self, pin: u8, pin_mode: PinMode) -> Result<(), E> {
         self.update_register_bit(
@@ -392,7 +421,7 @@ impl Polarity {
 }
 
 /// Generic port definitions.
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, PartialEq)]
 pub enum Port {
     /// Represent port A.
     GPIOA,
